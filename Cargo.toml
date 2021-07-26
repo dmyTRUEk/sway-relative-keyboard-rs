@@ -1,9 +1,16 @@
 [package]
 name = "sway-rkbd-rs"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[profile.release]
+lto = true
+target-cpu = "native"
+codegen-units = 1
+opt-level = 3
+panic = "abort"
 
 [dependencies]
 i3ipc = "0.10.1"
