@@ -12,13 +12,13 @@ that remembers your keyboard layout for each window and restores it on focus cha
    `git clone https://github.com/dmyTRUEk/sway-rkbd-rs`
 
 2. Compile it:  
-   0. Install rust (and cargo) by your preffered method.
+   1. Install rust (and cargo) by your preffered method.
 
-   1. Install dependencies:  
+   2. Install dependencies:  
       `cargo install cargo-edit`  
       `cargo add json i3ipc`
 
-   2. Compile:  
+   3. Compile:  
       `cargo build --release`
 
    After successful build, you can find binary here:  
