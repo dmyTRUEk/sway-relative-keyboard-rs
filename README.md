@@ -1,7 +1,7 @@
 # README
 
 ## About
-`sway-rkbd-rs` is program for [Sway](https://swaywm.org/),
+`sway-rkbd-rs` (rkbd stands for Relative Keyboard) is program for [Sway](https://swaywm.org/),
 that remembers your keyboard layout for each window and restores it on focus change.
 
 
