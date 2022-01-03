@@ -1,5 +1,7 @@
 # TODO:
 
+- update libs (set `*` ?)
+- upadte rust edition to 2021
 - add command line args:
   - default keyboard layout name/id
   - ? fallback keyboard layout name/id

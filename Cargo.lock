@@ -242,7 +242,7 @@ dependencies = [
 
 [[package]]
 name = "sway-rkbd-rs"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "i3ipc",
  "json",
