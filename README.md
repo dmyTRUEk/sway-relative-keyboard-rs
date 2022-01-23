@@ -1,7 +1,7 @@
 # README
 
 ## About
-`sway-rkbd-rs` (rkbd stands for Relative Keyboard) is program for [Sway](https://swaywm.org/),
+`sway-relative-keyboard-rs` is program for [Sway](https://swaywm.org/),
 that remembers your keyboard layout for each window and restores it on focus change.
 
 
@@ -10,11 +10,11 @@ that remembers your keyboard layout for each window and restores it on focus cha
 ### Build from source:
 1. Clone source code from this repository:  
    ```
-   git clone https://github.com/dmyTRUEk/sway-rkbd-rs
+   git clone https://github.com/dmyTRUEk/sway-relative-keyboard-rs
    ```
 
 2. Compile it:  
-   1. Install rust (and cargo) by your preffered method.
+   1. Install `rust` (and `cargo`) by your preffered method.
 
    2. Compile:  
       ```
@@ -23,7 +23,7 @@ that remembers your keyboard layout for each window and restores it on focus cha
 
    After successful build, you can find binary here:  
    ```
-   path_to_src/target/release/sway-rkbd-rs
+   path_to_src/target/release/sway-relative-keyboard-rs
    ```
 
 3. (**Optional**) Move binary to preffered folder.
@@ -31,13 +31,13 @@ that remembers your keyboard layout for each window and restores it on focus cha
 4. Add binary to sway "startup":  
    In your sway config file add this line:  
    ```
-   exec path_to_binary
+   exec path/to/sway-relative-keyboard-rs
    ```  
-   and then restart your pc.
+   and then restart your pc (or sway?).
 
    For example:  
    ```
-   exec $(xdg-user-dir)/Code/rust/sway-rkbd-rs/target/release/sway-rkbd-rs
+   exec $HOME/.local/bin/sway-relative-keyboard-rs
    ```
 
    If you want to get it work without restart,
