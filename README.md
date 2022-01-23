@@ -14,19 +14,16 @@ that remembers your keyboard layout for each window and restores it on focus cha
    ```
 
 2. Compile it:  
-   1. Install `rust` (and `cargo`) by your preffered method.
-
-   2. Compile:  
-      ```
-      cargo build --release
-      ```
+   ```
+   cargo build --release
+   ```
 
    After successful build, you can find binary here:  
    ```
    path_to_src/target/release/sway-relative-keyboard-rs
    ```
 
-3. (**Optional**) Move binary to preffered folder.
+3. Move binary to preffered folder, for example to `$HOME/.local/bin/`.
 
 4. Add binary to sway "startup":  
    In your sway config file add this line:  
