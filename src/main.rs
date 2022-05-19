@@ -27,17 +27,17 @@ fn get_all_input_ids(connection: &mut Connection) -> Option<Vec<String>> {
 
 
 fn main() -> Fallible<()> {
-    // this is default keyboard layout id, so change it, if you want it to be different
-    let default_kblayout_id: i64 = 0;
-
     // check if only one instance
     let xdg_dirs = xdg::BaseDirectories::new().unwrap();
-    let file = xdg_dirs.place_config_file("swkb.lock").unwrap();
+    let file = xdg_dirs.place_config_file("sway-relative-keyboard-rs.lock").unwrap();
     let instance_a = single_instance::SingleInstance::new(file.to_str().unwrap()).unwrap();
     if !instance_a.is_single() {
         println!("Only one instance of sway-relative-keyboard-rs at a time is allowed, exiting this instance.");
         std::process::exit(1);
     }
+
+    // this is default keyboard layout id, so change it, if you want it to be different
+    let default_kblayout_id: i64 = 0;
 
     let mut connection = Connection::new()?;
     let inputs = get_all_input_ids(&mut connection).unwrap();
