@@ -1,27 +1,26 @@
 //! sway-relative-keyboard-rs
 
-extern crate swayipc;
+use std::collections::HashMap;
 
-use {
-    std::collections::HashMap,
-    swayipc::reply::Event,
-    swayipc::{
-        Connection,
-        EventType,
-        Fallible,
-    },
+use single_instance::SingleInstance;
+use swayipc::{
+    Connection,
+    EventType,
+    Fallible,
+    reply::Event,
 };
 
 
+// default keyboard layout id, so change it, if you want it to be different
+const DEFAULT_KEYBOARD_LAYOUT_ID: i64 = 0;
+
 
 fn get_all_input_ids(connection: &mut Connection) -> Option<Vec<String>> {
-    return match connection.get_inputs() {
-        Ok(inputs) => {
-            let input_ids: Vec<String> = inputs.iter().map(|input| input.identifier.clone()).collect();
-            Some(input_ids)
-        }
-        _ => { None }
-    }
+    let inputs = connection.get_inputs().ok()?;
+    let input_ids = inputs.iter()
+        .map(|input| input.identifier.clone())
+        .collect();
+    Some(input_ids)
 }
 
 
@@ -30,21 +29,18 @@ fn main() -> Fallible<()> {
     // check if only one instance
     let xdg_dirs = xdg::BaseDirectories::new().unwrap();
     let file = xdg_dirs.place_config_file("sway-relative-keyboard-rs.lock").unwrap();
-    let instance_a = single_instance::SingleInstance::new(file.to_str().unwrap()).unwrap();
+    let instance_a = SingleInstance::new(file.to_str().unwrap()).unwrap();
     if !instance_a.is_single() {
         println!("Only one instance of sway-relative-keyboard-rs at a time is allowed, exiting this instance.");
         std::process::exit(1);
     }
-
-    // this is default keyboard layout id, so change it, if you want it to be different
-    let default_kblayout_id: i64 = 0;
 
     let mut connection = Connection::new()?;
     let inputs = get_all_input_ids(&mut connection).unwrap();
     let mut map_window_id_to_layout_id: HashMap<i64, i64> = HashMap::new();
     // let subs = [EventType::Input, EventType::Window];
     let mut current_window_id: i64 = 0;
-    let mut current_layout_id: i64 = default_kblayout_id;
+    let mut current_layout_id: i64 = DEFAULT_KEYBOARD_LAYOUT_ID;
 
     for event in connection.subscribe(&[EventType::Input, EventType::Window])? {
         // println!("event = {:?}", event);
@@ -65,7 +61,7 @@ fn main() -> Fallible<()> {
                     println!();
                 }
             }
-            Ok(Event::Window(event_window)) => match event_window.change { swayipc::reply::WindowChange::Focus => {
+            Ok(Event::Window(event_window)) if event_window.change == swayipc::reply::WindowChange::Focus => {
                 let new_window_id = event_window.container.id;
                 let is_printed_similar_event: bool = new_window_id == current_window_id;
                 current_window_id = new_window_id;
@@ -74,7 +70,7 @@ fn main() -> Fallible<()> {
                         *this_window_layout_id
                     }
                     None => {
-                        let new_layout_id = default_kblayout_id;
+                        let new_layout_id = DEFAULT_KEYBOARD_LAYOUT_ID;
                         map_window_id_to_layout_id.insert(
                             current_window_id,
                             new_layout_id
@@ -93,7 +89,7 @@ fn main() -> Fallible<()> {
                     println!("Event::Window -> Focus -> map_window_id_to_layout_id = {:#?}", map_window_id_to_layout_id);
                     println!();
                 }
-            }, _ => {} }
+            }
             Err(e) => {
                 println!("Error: {e}");
             }
