@@ -1,6 +1,6 @@
 //! sway-relative-keyboard-rs
 
-use std::collections::HashMap;
+use std::{collections::HashMap, process::exit};
 
 use single_instance::SingleInstance;
 use swayipc::{
@@ -15,35 +15,23 @@ use swayipc::{
 const DEFAULT_KEYBOARD_LAYOUT_ID: i64 = 0;
 
 
-fn get_all_input_ids(connection: &mut Connection) -> Option<Vec<String>> {
-    let inputs = connection.get_inputs().ok()?;
-    let input_ids = inputs.iter()
-        .map(|input| input.identifier.clone())
-        .collect();
-    Some(input_ids)
-}
-
-
 
 fn main() -> Fallible<()> {
     // check if only one instance
-    let xdg_dirs = xdg::BaseDirectories::new().unwrap();
-    let file = xdg_dirs.place_config_file("sway-relative-keyboard-rs.lock").unwrap();
-    let instance_a = SingleInstance::new(file.to_str().unwrap()).unwrap();
-    if !instance_a.is_single() {
-        println!("Only one instance of sway-relative-keyboard-rs at a time is allowed, exiting this instance.");
-        std::process::exit(1);
-    }
+    let Ok(xdg_dirs) = xdg::BaseDirectories::new() else { exit_with_err_msg("can't create `xdg::BaseDirectories`") };
+    let Ok(file) = xdg_dirs.place_config_file("sway-relative-keyboard-rs.lock") else { exit_with_err_msg("can't create lock file") };
+    let Ok(instance_a) = SingleInstance::new(file.to_str().unwrap()) else { exit_with_err_msg("can't create `SingleInstance`") };
+    if !instance_a.is_single() { exit_with_err_msg("Only one instance of sway-relative-keyboard-rs at a time is allowed, exiting this instance.") }
 
     let mut connection = Connection::new()?;
-    let inputs = get_all_input_ids(&mut connection).unwrap();
+    let inputs = get_all_input_ids(&mut connection);
     let mut map_window_id_to_layout_id: HashMap<i64, i64> = HashMap::new();
     // let subs = [EventType::Input, EventType::Window];
     let mut current_window_id: i64 = 0;
     let mut current_layout_id: i64 = DEFAULT_KEYBOARD_LAYOUT_ID;
 
     for event in connection.subscribe(&[EventType::Input, EventType::Window])? {
-        // println!("event = {:?}", event);
+        // eprintln!("event = {:?}", event);
         match event {
             Ok(Event::Input(event_input)) => {
                 let all_layouts = event_input.input.xkb_layout_names;
@@ -56,9 +44,9 @@ fn main() -> Fallible<()> {
                     current_layout_id
                 );
                 if !is_printed_similar_event {
-                    println!("current_layout_name = {current_layout_name}");
-                    println!("Event::Input -> map_window_id_to_layout_id = {:#?}", map_window_id_to_layout_id);
-                    println!();
+                    eprintln!("current_layout_name = {current_layout_name}");
+                    eprintln!("Event::Input -> map_window_id_to_layout_id = {map_window_id_to_layout_id:#?}");
+                    eprintln!();
                 }
             }
             Ok(Event::Window(event_window)) if event_window.change == swayipc::reply::WindowChange::Focus => {
@@ -84,14 +72,14 @@ fn main() -> Fallible<()> {
                     connection.run_command(format!("input {input} xkb_switch_layout {new_layout_id}"))?;
                 }
                 if !is_printed_similar_event {
-                    let current_window_name = event_window.container.name.unwrap_or("none".to_string());
-                    println!("focused on window_id = {current_window_id}, window_name = \"{current_window_name}\"");
-                    println!("Event::Window -> Focus -> map_window_id_to_layout_id = {:#?}", map_window_id_to_layout_id);
-                    println!();
+                    let current_window_name = event_window.container.name.unwrap_or(format!("none"));
+                    eprintln!("focused on window_id = {current_window_id}, window_name = `{current_window_name}`");
+                    eprintln!("Event::Window -> Focus -> map_window_id_to_layout_id = {:#?}", map_window_id_to_layout_id);
+                    eprintln!();
                 }
             }
             Err(e) => {
-                println!("Error: {e}");
+                eprintln!("Error: {e}");
             }
             _ => {}
         }
@@ -100,4 +88,19 @@ fn main() -> Fallible<()> {
 }
 
 
+
+fn get_all_input_ids(connection: &mut Connection) -> Vec<String> {
+    let Ok(inputs) = connection.get_inputs() else { exit_with_err_msg("can't get inputs") };
+    let input_ids = inputs.iter()
+        .map(|input| input.identifier.clone())
+        .collect();
+    input_ids
+}
+
+
+
+fn exit_with_err_msg(msg: &str) -> ! {
+	eprintln!("Error: {msg}");
+	exit(1)
+}
 
