@@ -1,6 +1,6 @@
 [package]
 name = "sway-relative-keyboard-rs"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2021"
 
 [profile.release]
@@ -14,6 +14,6 @@ strip = true
 #target-cpu = "native" -> RUSTFLAGS='-C target-cpu=native'
 
 [dependencies]
-single-instance = "0.3.1"
-swayipc = "2.7.2"
-xdg = "2.2.0"
+single-instance = "0.3.3"
+swayipc = "3.0.3"
+xdg = "3.0.0"

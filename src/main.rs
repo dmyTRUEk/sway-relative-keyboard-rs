@@ -2,12 +2,14 @@
 
 use std::{collections::HashMap, process::exit};
 
+use xdg::BaseDirectories as XdgBaseDirectories;
 use single_instance::SingleInstance;
 use swayipc::{
     Connection,
+    Event,
     EventType,
     Fallible,
-    reply::Event,
+    WindowChange,
 };
 
 
@@ -18,15 +20,13 @@ const DEFAULT_KEYBOARD_LAYOUT_ID: i64 = 0;
 
 fn main() -> Fallible<()> {
     // check if only one instance
-    let Ok(xdg_dirs) = xdg::BaseDirectories::new() else { exit_with_err_msg("can't create `xdg::BaseDirectories`") };
-    let Ok(file) = xdg_dirs.place_config_file("sway-relative-keyboard-rs.lock") else { exit_with_err_msg("can't create lock file") };
-    let Ok(instance_a) = SingleInstance::new(file.to_str().unwrap()) else { exit_with_err_msg("can't create `SingleInstance`") };
-    if !instance_a.is_single() { exit_with_err_msg("Only one instance of sway-relative-keyboard-rs at a time is allowed, exiting this instance.") }
+    let Ok(file) = XdgBaseDirectories::new().place_config_file("sway-relative-keyboard-rs.lock") else { exit_with_err_msg("can't create lock file") };
+    let Ok(instance) = SingleInstance::new(file.to_str().unwrap()) else { exit_with_err_msg("can't create `SingleInstance`") };
+    if !instance.is_single() { exit_with_err_msg("Only one instance of sway-relative-keyboard-rs at a time is allowed, exiting this instance.") }
 
     let mut connection = Connection::new()?;
     let inputs = get_all_input_ids(&mut connection);
     let mut map_window_id_to_layout_id: HashMap<i64, i64> = HashMap::new();
-    // let subs = [EventType::Input, EventType::Window];
     let mut current_window_id: i64 = 0;
     let mut current_layout_id: i64 = DEFAULT_KEYBOARD_LAYOUT_ID;
 
@@ -49,7 +49,7 @@ fn main() -> Fallible<()> {
                     eprintln!();
                 }
             }
-            Ok(Event::Window(event_window)) if event_window.change == swayipc::reply::WindowChange::Focus => {
+            Ok(Event::Window(event_window)) if event_window.change == WindowChange::Focus => {
                 let new_window_id = event_window.container.id;
                 let is_printed_similar_event: bool = new_window_id == current_window_id;
                 current_window_id = new_window_id;
@@ -100,7 +100,7 @@ fn get_all_input_ids(connection: &mut Connection) -> Vec<String> {
 
 
 fn exit_with_err_msg(msg: &str) -> ! {
-	eprintln!("Error: {msg}");
-	exit(1)
+    eprintln!("Error: {msg}");
+    exit(1)
 }
 
